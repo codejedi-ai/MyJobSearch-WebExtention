@@ -7,12 +7,15 @@
 		"storage",
 		"activeTab",
 		"scripting",
-		"downloads"
+		"downloads",
+		"contextMenus"
 	],
 	"host_permissions": [
 		"https://uwaterloo.ca/*",
 		"https://*.edu/*",
-		"https://*.ac.uk/*"
+		"https://*.ac.uk/*",
+		"https://*.myworkdayjobs.com/*",
+		"https://waterlooworks.uwaterloo.ca/*"
 	],
 	"background": {
 		"service_worker": "background.js",
@@ -24,7 +27,9 @@
 				"https://uwaterloo.ca/*/important-dates*",
 				"https://*/academic-calendar*",
 				"https://*/important-dates*",
-				"https://*/registrar*"
+				"https://*/registrar*",
+				"https://*.myworkdayjobs.com/*",
+				"https://waterlooworks.uwaterloo.ca/*"
 			],
 			"js": ["content.js"],
 			"run_at": "document_idle"

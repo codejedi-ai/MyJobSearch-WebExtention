@@ -3,6 +3,199 @@ import { parseDate, extractTermFromText, categorizeEvent, isDeadline, extractEve
 
 console.log('Content script loaded on:', window.location.href);
 
+// Listen for on-demand capture requests
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+	if (message.type === 'CAPTURE_PAGE') {
+		saveHTMLContent();
+		sendResponse({ success: true });
+		return true;
+	}
+	if (message.type === 'START_ELEMENT_PICKER') {
+		startElementPicker();
+		sendResponse({ success: true });
+		return true;
+	}
+	if (message.type === 'LOG_PAGE_TEXT') {
+		logPageText();
+		sendResponse({ success: true });
+		return true;
+	}
+	if (message.type === 'SHOW_SIMPLIFY_RESULT') {
+		showSimplifyPopup(message.text);
+		sendResponse({ success: true });
+		return true;
+	}
+	return false;
+});
+
+let isPicking = false;
+let lastHovered: HTMLElement | null = null;
+
+function startElementPicker(): void {
+	if (isPicking) return;
+	isPicking = true;
+	console.log('Element picker started. Hover and click an element to capture. Press ESC to cancel.');
+	addPickerListeners();
+}
+
+function stopElementPicker(): void {
+	isPicking = false;
+	removePickerListeners();
+	clearHighlight();
+}
+
+function addPickerListeners(): void {
+	document.addEventListener('mousemove', handleHover, true);
+	document.addEventListener('click', handleClick, true);
+	document.addEventListener('keydown', handleKeydown, true);
+}
+
+function removePickerListeners(): void {
+	document.removeEventListener('mousemove', handleHover, true);
+	document.removeEventListener('click', handleClick, true);
+	document.removeEventListener('keydown', handleKeydown, true);
+}
+
+function handleHover(event: MouseEvent): void {
+	if (!isPicking) return;
+	const target = event.target as (HTMLElement & { __picker_old_outline?: string }) | null;
+	if (!target || target === lastHovered) return;
+	clearHighlight();
+	lastHovered = target;
+	(lastHovered as any).__picker_old_outline = lastHovered.style.outline;
+	lastHovered.style.outline = '2px solid #8a2be2';
+}
+
+function clearHighlight(): void {
+	if (lastHovered) {
+		lastHovered.style.outline = (lastHovered as any).__picker_old_outline || '';
+		delete (lastHovered as any).__picker_old_outline;
+		lastHovered = null;
+	}
+}
+
+function handleClick(event: MouseEvent): void {
+	if (!isPicking) return;
+	event.preventDefault();
+	event.stopPropagation();
+	const target = event.target as HTMLElement | null;
+	if (!target) {
+		stopElementPicker();
+		return;
+	}
+
+	const elementData = buildElementData(target);
+	const filename = `element-${Date.now()}.html`;
+
+	chrome.runtime.sendMessage({
+		type: 'SAVE_ELEMENT',
+		elementHtml: target.outerHTML,
+		elementJson: elementData,
+		filename,
+		timestamp: new Date().toISOString(),
+	}, () => {
+		console.log('Element captured and sent for download');
+	});
+
+	stopElementPicker();
+}
+
+function handleKeydown(event: KeyboardEvent): void {
+	if (!isPicking) return;
+	if (event.key === 'Escape') {
+		event.preventDefault();
+		stopElementPicker();
+		console.log('Element picker canceled');
+	}
+}
+
+function buildElementData(el: HTMLElement): any {
+	const rect = el.getBoundingClientRect();
+	const attrs: Record<string, string> = {};
+	Array.from(el.attributes).forEach((a) => {
+		attrs[a.name] = a.value;
+	});
+
+	return {
+		url: window.location.href,
+		title: document.title,
+		tag: el.tagName,
+		id: el.id || null,
+		classes: el.className || null,
+		text: (el.innerText || '').trim(),
+		outerHTML: el.outerHTML,
+		attributes: attrs,
+		href: (el as HTMLAnchorElement).href || null,
+		src: (el as HTMLImageElement).src || null,
+		boundingRect: {
+			x: rect.x,
+			y: rect.y,
+			width: rect.width,
+			height: rect.height,
+		},
+		capturedAt: new Date().toISOString(),
+	};
+}
+
+function logPageText(): void {
+	const text = document.body?.innerText || '';
+	console.log('=== PAGE TEXT START ===');
+	console.log(text);
+	console.log('=== PAGE TEXT END ===');
+}
+
+function showSimplifyPopup(text: string): void {
+	const containerId = 'myjobsearch-simplify-popup';
+	const existing = document.getElementById(containerId);
+	if (existing) existing.remove();
+
+	const el = document.createElement('div');
+	el.id = containerId;
+	el.style.position = 'fixed';
+	el.style.top = '16px';
+	el.style.right = '16px';
+	el.style.maxWidth = '360px';
+	el.style.background = '#1f2937';
+	el.style.color = 'white';
+	el.style.padding = '12px 14px';
+	el.style.borderRadius = '12px';
+	el.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)';
+	el.style.zIndex = '2147483647';
+	el.style.fontFamily = 'system-ui, -apple-system, Segoe UI, Roboto, Arial';
+
+	const header = document.createElement('div');
+	header.style.display = 'flex';
+	header.style.alignItems = 'center';
+	header.style.justifyContent = 'space-between';
+
+	const title = document.createElement('div');
+	title.textContent = 'Simplify preview';
+	title.style.fontWeight = '600';
+	title.style.marginBottom = '6px';
+
+	const close = document.createElement('button');
+	close.textContent = '×';
+	close.style.marginLeft = '8px';
+	close.style.background = 'transparent';
+	close.style.color = '#cbd5e1';
+	close.style.border = 'none';
+	close.style.cursor = 'pointer';
+	close.style.fontSize = '18px';
+	close.onclick = () => el.remove();
+
+	header.appendChild(title);
+	header.appendChild(close);
+
+	const body = document.createElement('div');
+	body.textContent = text;
+	body.style.whiteSpace = 'pre-wrap';
+	body.style.lineHeight = '1.5';
+
+	el.appendChild(header);
+	el.appendChild(body);
+	document.body.appendChild(el);
+}
+
 // Save HTML content for debugging
 function saveHTMLContent(): void {
 	const htmlContent = document.documentElement.outerHTML;
@@ -15,6 +208,7 @@ function saveHTMLContent(): void {
 		timestamp: new Date().toISOString(),
 		title: document.title,
 		htmlSize: htmlContent.length,
+		fullText: document.body?.innerText || '',
 		pageStructure: extractPageStructure(),
 		fullHTML: htmlContent, // Include full HTML for inspection
 	};

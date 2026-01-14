@@ -45,6 +45,42 @@ export function PopupApp() {
 		URL.revokeObjectURL(url);
 	};
 
+	const downloadPageSnapshot = () => {
+		chrome.runtime.sendMessage({ type: 'REQUEST_SAVE_HTML', timestamp: new Date().toISOString() }, (resp) => {
+			if (resp && resp.success) {
+				alert('Page snapshot (HTML + JSON) download triggered. Check your Downloads folder.');
+			} else {
+				alert('Could not download page snapshot.');
+			}
+		});
+	};
+
+	const printPage = () => {
+		chrome.runtime.sendMessage({ type: 'PRINT_PAGE', timestamp: new Date().toISOString() }, (resp) => {
+			if (!resp || !resp.success) {
+				alert('Could not print the page.');
+			}
+		});
+	};
+
+	const logPageText = () => {
+		chrome.runtime.sendMessage({ type: 'LOG_PAGE_TEXT', timestamp: new Date().toISOString() }, (resp) => {
+			if (resp && resp.success) {
+				alert('Page text was output to the tab console.');
+			} else {
+				alert('Could not log page text.');
+			}
+		});
+	};
+
+	const simplifyPage = () => {
+		chrome.runtime.sendMessage({ type: 'SIMPLIFY_PAGE', timestamp: new Date().toISOString() }, (resp) => {
+			if (!resp || !resp.success) {
+				alert('Could not simplify this page.');
+			}
+		});
+	};
+
 	const clearAllData = () => {
 		if (confirm('Are you sure you want to clear all scraped data?')) {
 			chrome.runtime.sendMessage(
@@ -154,6 +190,18 @@ export function PopupApp() {
 			)}
 
 			<footer class="popup-footer">
+				<button onClick={logPageText} class="btn btn-secondary">
+					Log Page Text
+				</button>
+				<button onClick={simplifyPage} class="btn btn-secondary">
+					Simplify Current Page
+				</button>
+				<button onClick={downloadPageSnapshot} class="btn btn-secondary">
+					Download Page Snapshot
+				</button>
+				<button onClick={printPage} class="btn btn-secondary">
+					Print Page (PDF)
+				</button>
 				<button onClick={exportToJSON} class="btn btn-primary">
 					Export JSON
 				</button>

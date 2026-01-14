@@ -50,12 +50,51 @@ export interface SaveHTMLMessage extends BaseMessage {
 	url: string;
 }
 
+export interface RequestSaveHtmlMessage extends BaseMessage {
+	type: 'REQUEST_SAVE_HTML';
+}
+
+export interface PrintPageMessage extends BaseMessage {
+	type: 'PRINT_PAGE';
+}
+
+export interface StartElementPickerMessage extends BaseMessage {
+	type: 'START_ELEMENT_PICKER';
+}
+
+export interface SaveElementMessage extends BaseMessage {
+	type: 'SAVE_ELEMENT';
+	elementHtml: string;
+	elementJson: any;
+	filename: string;
+}
+
+export interface LogPageTextMessage extends BaseMessage {
+	type: 'LOG_PAGE_TEXT';
+}
+
+export interface ShowSimplifyResultMessage extends BaseMessage {
+	type: 'SHOW_SIMPLIFY_RESULT';
+	text: string;
+}
+
+export interface SimplifyPageMessage extends BaseMessage {
+	type: 'SIMPLIFY_PAGE';
+}
+
 export type ExtensionMessage =
 	| ScrapedDatesMessage
 	| GetStoredDatesMessage
 	| StoredDatesResponse
 	| ClearStorageMessage
-	| SaveHTMLMessage;
+	| SaveHTMLMessage
+	| RequestSaveHtmlMessage
+	| PrintPageMessage
+	| StartElementPickerMessage
+	| SaveElementMessage
+	| LogPageTextMessage
+	| ShowSimplifyResultMessage
+	| SimplifyPageMessage;
 
 export interface StorageData {
 	scraped_dates?: Record<string, ScrapedDateCollection>;
