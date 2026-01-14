@@ -8,6 +8,17 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 	console.log('Background received message:', message.type);
 
 	switch (message.type) {
+		case 'SAVE_HTML':
+			handleSaveHTML(message as any)
+				.then(() => {
+					sendResponse({ success: true });
+				})
+				.catch((error) => {
+					console.error('Error saving HTML:', error);
+					sendResponse({ success: false, error: error.message });
+				});
+			return true; // Keep channel open for async response
+
 		case 'SCRAPED_DATES':
 			handleScrapedDates(message.data, message.sourceUrl)
 				.then(() => {
@@ -127,6 +138,59 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 		}
 	}
 });
+
+async function handleSaveHTML(message: any): Promise<void> {
+	const { html, filename, url, timestamp } = message;
+	const { json } = message;
+	
+	console.log(`Saving HTML for: ${url}`);
+	console.log(`Filename: ${filename}`);
+	
+	// Try to download the file
+	try {
+		const blob = new Blob([html], { type: 'text/html' });
+		const blobUrl = URL.createObjectURL(blob);
+		
+		chrome.downloads.download({
+			url: blobUrl,
+			filename: filename,
+			saveAs: false,
+		}, (downloadId) => {
+			if (downloadId) {
+				console.log(`✓ HTML saved with download ID: ${downloadId}`);
+				console.log(`File: ${filename}`);
+			}
+		});
+	} catch (error) {
+		console.error('Error creating blob:', error);
+		// Fallback: log the HTML size info
+		console.log(`HTML size: ${(html.length / 1024).toFixed(2)} KB`);
+	}
+
+	// Save JSON file
+	try {
+		const jsonFilename = filename.replace('.html', '.json');
+		const jsonContent = JSON.stringify(json, null, 2);
+		const jsonBlob = new Blob([jsonContent], { type: 'application/json' });
+		const jsonBlobUrl = URL.createObjectURL(jsonBlob);
+		
+		// Delay JSON download slightly to avoid race conditions
+		setTimeout(() => {
+			chrome.downloads.download({
+				url: jsonBlobUrl,
+				filename: jsonFilename,
+				saveAs: false,
+			}, (downloadId) => {
+				if (downloadId) {
+					console.log(`✓ JSON saved with download ID: ${downloadId}`);
+					console.log(`File: ${jsonFilename}`);
+				}
+			});
+		}, 500);
+	} catch (error) {
+		console.error('Error creating JSON blob:', error);
+	}
+}
 
 function matchesTargetPattern(url: string): boolean {
 	const patterns = [

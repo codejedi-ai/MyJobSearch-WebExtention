@@ -155,6 +155,7 @@ When adding new features, follow this structure:
    - [ ] Verify dates are scraped
    - [ ] Check popup displays data correctly
    - [ ] Test JSON export
+   - [ ] Confirm HTML + JSON snapshots download to your Downloads folder
    - [ ] Test clear all functionality
    - [ ] Test with multiple universities
 

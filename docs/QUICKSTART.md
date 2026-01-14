@@ -48,7 +48,7 @@ npm run build
 1. Visit: https://uwaterloo.ca/current-graduate-students/important-dates
 2. Open DevTools (F12) and check console
 3. Click the extension icon to view scraped dates
-4. Click "Export JSON" to download data
+4. The extension will also save page snapshots (HTML + JSON) to your Downloads folder for debugging
 
 ## Development Mode
 

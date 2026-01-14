@@ -43,11 +43,19 @@ export interface ClearStorageMessage extends BaseMessage {
 	url?: string; // If undefined, clear all
 }
 
+export interface SaveHTMLMessage extends BaseMessage {
+	type: 'SAVE_HTML';
+	html: string;
+	filename: string;
+	url: string;
+}
+
 export type ExtensionMessage =
 	| ScrapedDatesMessage
 	| GetStoredDatesMessage
 	| StoredDatesResponse
-	| ClearStorageMessage;
+	| ClearStorageMessage
+	| SaveHTMLMessage;
 
 export interface StorageData {
 	scraped_dates?: Record<string, ScrapedDateCollection>;

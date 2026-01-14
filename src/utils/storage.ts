@@ -60,6 +60,7 @@ export async function getSettings(): Promise<StorageData['settings']> {
 	return data.settings || {
 		autoScrape: true,
 		notifyOnNewDates: false,
+		autoApply: false,
 	};
 }
 

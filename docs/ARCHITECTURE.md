@@ -33,6 +33,7 @@ A Chrome extension built with TypeScript and Preact that scrapes academic dates 
 2. Sends `SCRAPED_DATES` message to background worker
 3. Background worker validates, deduplicates, extracts university name, stores in Chrome storage
 4. Popup requests `GET_STORED_DATES` to display in UI
+5. Content script also sends `SAVE_HTML` with full HTML and structured JSON snapshot; background saves both via `chrome.downloads`
 
 ### Job Automation Foundation (In Progress)
 - **[src/scrapers/base.ts](../src/scrapers/base.ts)** - Abstract `BaseJobScraper` class with common methods:
@@ -89,6 +90,7 @@ Job scraping is foundation-only; requires auto-fill and auto-apply systems. See 
 
 ### Content Script → Background Worker
 - `SCRAPED_DATES`: New dates found; background validates and stores
+- `SAVE_HTML`: Sends full page HTML plus JSON snapshot (url/title/structure) for download to local disk
 - Background responds with `{ success: boolean }`
 
 ### Popup → Background Worker
@@ -101,6 +103,7 @@ Job scraping is foundation-only; requires auto-fill and auto-apply systems. See 
 - `chrome.runtime.sendMessage` - Send to background worker
 - `chrome.storage.local` - Persist data across sessions
 - `chrome.tabs.query` / `chrome.scripting.executeScript` - (Future) For auto-apply automation
+- `chrome.downloads` - Save HTML/JSON page snapshots for debugging
 
 ## Important Conventions & Warnings
 

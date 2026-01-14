@@ -1,5 +1,7 @@
 # MyJobSearch - Academic Date Scraper
 
+![Job Searcher banner](Job-Searcher.png)
+
 A Chrome extension that automatically scrapes academic and job-related dates from university websites and converts them to structured JSON format.
 
 ## Features
@@ -11,6 +13,7 @@ A Chrome extension that automatically scrapes academic and job-related dates fro
 - **Beautiful UI**: Preact-based popup to view and manage scraped dates
 - **JSON Export**: Export all scraped data as JSON for further processing
 - **Background Processing**: Runs automatically without user interaction
+- **Page Snapshots**: Saves full page HTML + JSON snapshots to Downloads for debugging/scraping validation
 
 ## Supported Pages
 
@@ -52,14 +55,14 @@ Supported domains:
    - `icon48.png` (48x48 pixels)
    - `icon128.png` (128x128 pixels)
 
-   You can use any image editor or online tool like [Favicon Generator](https://realfavicongenerator.net/).
-
-   **Quick placeholder generation** (if you have ImageMagick):
+   **Using ImageMagick** (recommended):
    ```bash
-   convert -size 16x16 xc:#667eea public/icons/icon16.png
-   convert -size 48x48 xc:#667eea public/icons/icon48.png
-   convert -size 128x128 xc:#667eea public/icons/icon128.png
+   magick convert logo-nobg.png -resize 16x16 public/icons/icon16.png
+   magick convert logo-nobg.png -resize 48x48 public/icons/icon48.png
+   magick convert logo-nobg.png -resize 128x128 public/icons/icon128.png
    ```
+
+   Or use any image editor or online tool like [Favicon Generator](https://realfavicongenerator.net/).
 
 4. **Build the extension**
    ```bash

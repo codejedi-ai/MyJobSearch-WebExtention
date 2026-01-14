@@ -3,6 +3,59 @@ import { parseDate, extractTermFromText, categorizeEvent, isDeadline, extractEve
 
 console.log('Content script loaded on:', window.location.href);
 
+// Save HTML content for debugging
+function saveHTMLContent(): void {
+	const htmlContent = document.documentElement.outerHTML;
+	const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+	const filename = `page-${timestamp}.html`;
+	
+	// Also create a JSON representation of the page
+	const pageJSON = {
+		url: window.location.href,
+		timestamp: new Date().toISOString(),
+		title: document.title,
+		htmlSize: htmlContent.length,
+		pageStructure: extractPageStructure(),
+		fullHTML: htmlContent, // Include full HTML for inspection
+	};
+	
+	// Send to background worker to save
+	chrome.runtime.sendMessage({
+		type: 'SAVE_HTML',
+		html: htmlContent,
+		json: pageJSON,
+		filename: filename,
+		url: window.location.href,
+		timestamp: new Date().toISOString(),
+	}, (response) => {
+		if (response && response.success) {
+			console.log(`✓ HTML saved as: ${filename}`);
+			console.log(`✓ JSON data available for download`);
+			console.log('Note: Check your Downloads folder or enable DevTools to save files');
+		} else {
+			console.warn('Could not save HTML to file, but outputting to console below:');
+			console.log('=== PAGE JSON DATA ===');
+			console.log(JSON.stringify(pageJSON, null, 2));
+			console.log('=== END PAGE JSON ===');
+		}
+	});
+}
+
+function extractPageStructure(): any {
+	return {
+		bodyText: document.body.innerText?.substring(0, 500) || '',
+		headings: Array.from(document.querySelectorAll('h1, h2, h3')).map(h => h.textContent),
+		links: Array.from(document.querySelectorAll('a')).map(a => ({
+			text: a.textContent,
+			href: a.href,
+		})).slice(0, 20),
+		tables: document.querySelectorAll('table').length,
+		lists: document.querySelectorAll('ul, ol').length,
+		forms: document.querySelectorAll('form').length,
+		buttons: Array.from(document.querySelectorAll('button')).map(b => b.textContent).slice(0, 10),
+	};
+}
+
 // Run scraping when page is fully loaded
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', runScraper);
@@ -11,9 +64,13 @@ if (document.readyState === 'loading') {
 }
 
 function runScraper(): void {
-	console.log('Starting date scraping...');
+	console.log('Starting scraping...');
+	console.log('Saving page HTML for debugging...');
+	saveHTMLContent();
+	
 	const dates = scrapePage();
 	console.log(`Found ${dates.length} dates`);
+	console.log('Scraped dates JSON:', JSON.stringify(dates, null, 2));
 
 	if (dates.length > 0) {
 		// Send to background worker
