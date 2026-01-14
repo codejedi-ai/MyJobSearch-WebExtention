@@ -1,0 +1,45 @@
+{
+	"manifest_version": 3,
+	"name": "MyJobSearch - Academic Date Scraper",
+	"version": "1.0.0",
+	"description": "Automatically scrape academic and job dates from university pages and convert to JSON",
+	"permissions": [
+		"storage",
+		"activeTab",
+		"scripting"
+	],
+	"host_permissions": [
+		"https://uwaterloo.ca/*",
+		"https://*.edu/*",
+		"https://*.ac.uk/*"
+	],
+	"background": {
+		"service_worker": "background.js",
+		"type": "module"
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"https://uwaterloo.ca/*/important-dates*",
+				"https://*/academic-calendar*",
+				"https://*/important-dates*",
+				"https://*/registrar*"
+			],
+			"js": ["content.js"],
+			"run_at": "document_idle"
+		}
+	],
+	"action": {
+		"default_popup": "popup.html",
+		"default_icon": {
+			"16": "icons/icon16.png",
+			"48": "icons/icon48.png",
+			"128": "icons/icon128.png"
+		}
+	},
+	"icons": {
+		"16": "icons/icon16.png",
+		"48": "icons/icon48.png",
+		"128": "icons/icon128.png"
+	}
+}

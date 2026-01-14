@@ -2,10 +2,12 @@
 	"compilerOptions": {
 		"target": "ES2020",
 		"module": "ESNext",
-		"moduleResolution": "bundler",
-		"noEmit": true,
+		"moduleResolution": "node",
 		"allowJs": true,
 		"checkJs": true,
+		"outDir": "./dist",
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
 
 		/* Preact Config */
 		"jsx": "react-jsx",
@@ -16,5 +18,5 @@
 			"react-dom": ["./node_modules/preact/compat/"]
 		}
 	},
-	"include": ["node_modules/vite/client.d.ts", "**/*"]
+	"include": ["src/**/*"]
 }

@@ -1,22 +1,28 @@
 {
 	"private": true,
-	"type": "module",
+	"name": "myjobsearch-extension",
+	"version": "1.0.0",
+	"description": "Chrome extension to scrape academic and job dates from university pages",
 	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"preview": "vite preview"
+		"dev": "webpack --mode development --watch",
+		"build": "webpack --mode production",
+		"clean": "rimraf dist"
 	},
 	"dependencies": {
-		"preact": "^10.26.9",
-		"preact-iso": "^2.10.0",
-		"preact-render-to-string": "^6.6.1"
+		"preact": "^10.26.9"
 	},
 	"devDependencies": {
-		"@preact/preset-vite": "^2.10.2",
+		"@types/chrome": "^0.0.268",
+		"copy-webpack-plugin": "^12.0.2",
+		"css-loader": "^6.8.1",
 		"eslint": "^9.34.0",
 		"eslint-config-preact": "^2.0.0",
+		"rimraf": "^5.0.5",
+		"style-loader": "^3.3.3",
+		"ts-loader": "^9.5.1",
 		"typescript": "^5.9.2",
-		"vite": "^7.0.4"
+		"webpack": "^5.89.0",
+		"webpack-cli": "^5.1.4"
 	},
 	"eslintConfig": {
 		"extends": "preact"
