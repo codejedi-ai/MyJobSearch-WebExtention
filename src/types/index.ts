@@ -19,8 +19,19 @@ export interface ScrapedDateCollection {
 
 export interface BaseMessage {
 	type: string;
-	timestamp: string;
+	timestamp?: string;
 }
+
+export interface ExtractPageDataMessage extends BaseMessage {
+	type: 'EXTRACT_PAGE_DATA';
+}
+
+export interface DownloadJSONMessage extends BaseMessage {
+	type: 'DOWNLOAD_JSON';
+	data: any;
+}
+
+export type ExtensionMessage = ExtractPageDataMessage | DownloadJSONMessage;
 
 export interface ScrapedDatesMessage extends BaseMessage {
 	type: 'SCRAPED_DATES';
@@ -43,16 +54,7 @@ export interface ClearStorageMessage extends BaseMessage {
 	url?: string; // If undefined, clear all
 }
 
-export interface SaveHTMLMessage extends BaseMessage {
-	type: 'SAVE_HTML';
-	html: string;
-	filename: string;
-	url: string;
-}
-
-export interface RequestSaveHtmlMessage extends BaseMessage {
-	type: 'REQUEST_SAVE_HTML';
-}
+// (removed duplicate SaveHTMLMessage and RequestSaveHtmlMessage definitions)
 
 export interface PrintPageMessage extends BaseMessage {
 	type: 'PRINT_PAGE';
@@ -82,19 +84,7 @@ export interface SimplifyPageMessage extends BaseMessage {
 	type: 'SIMPLIFY_PAGE';
 }
 
-export type ExtensionMessage =
-	| ScrapedDatesMessage
-	| GetStoredDatesMessage
-	| StoredDatesResponse
-	| ClearStorageMessage
-	| SaveHTMLMessage
-	| RequestSaveHtmlMessage
-	| PrintPageMessage
-	| StartElementPickerMessage
-	| SaveElementMessage
-	| LogPageTextMessage
-	| ShowSimplifyResultMessage
-	| SimplifyPageMessage;
+// (removed duplicate ExtensionMessage union)
 
 export interface StorageData {
 	scraped_dates?: Record<string, ScrapedDateCollection>;

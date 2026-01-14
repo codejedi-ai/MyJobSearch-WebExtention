@@ -1,214 +1,149 @@
 import { h } from 'preact';
-import { useState, useEffect } from 'preact/hooks';
-import { ScrapedDateCollection } from '../types';
+import { useState } from 'preact/hooks';
 import './style.css';
 
 export function PopupApp() {
-	const [storedDates, setStoredDates] = useState<Record<string, ScrapedDateCollection>>({});
-	const [loading, setLoading] = useState(true);
-	const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [currentJSON, setCurrentJSON] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState('');
+  const [statusType, setStatusType] = useState('info');
 
-	useEffect(() => {
-		loadDates();
-	}, []);
+  const showStatus = (message: string, type: string = 'info') => {
+    setStatus(message);
+    setStatusType(type);
+    if (type !== 'error') {
+      setTimeout(() => setStatus(''), 3000);
+    }
+  };
 
-	const loadDates = () => {
-		setLoading(true);
-		chrome.runtime.sendMessage(
-			{
-				type: 'GET_STORED_DATES',
-				timestamp: new Date().toISOString(),
-			},
-			(response) => {
-				if (response && response.type === 'STORED_DATES') {
-					setStoredDates(response.data);
+  const extractPageData = async () => {
+    setLoading(true);
+    showStatus('Extracting page data...', 'info');
 
-					// Set first tab as active
-					const keys = Object.keys(response.data);
-					if (keys.length > 0 && !activeTab) {
-						setActiveTab(keys[0]);
-					}
-				}
-				setLoading(false);
-			}
-		);
-	};
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-	const exportToJSON = () => {
-		const dataStr = JSON.stringify(storedDates, null, 2);
-		const blob = new Blob([dataStr], { type: 'application/json' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `academic-dates-${new Date().toISOString().split('T')[0]}.json`;
-		a.click();
-		URL.revokeObjectURL(url);
-	};
+      if (!tab || !tab.id) {
+        showStatus('No active tab found', 'error');
+        setLoading(false);
+        return;
+      }
 
-	const downloadPageSnapshot = () => {
-		chrome.runtime.sendMessage({ type: 'REQUEST_SAVE_HTML', timestamp: new Date().toISOString() }, (resp) => {
-			if (resp && resp.success) {
-				alert('Page snapshot (HTML + JSON) download triggered. Check your Downloads folder.');
-			} else {
-				alert('Could not download page snapshot.');
-			}
-		});
-	};
+      console.log('Sending EXTRACT_PAGE_DATA to tab:', tab.id);
 
-	const printPage = () => {
-		chrome.runtime.sendMessage({ type: 'PRINT_PAGE', timestamp: new Date().toISOString() }, (resp) => {
-			if (!resp || !resp.success) {
-				alert('Could not print the page.');
-			}
-		});
-	};
+      const response = await chrome.tabs.sendMessage(tab.id, { type: 'EXTRACT_PAGE_DATA' });
 
-	const logPageText = () => {
-		chrome.runtime.sendMessage({ type: 'LOG_PAGE_TEXT', timestamp: new Date().toISOString() }, (resp) => {
-			if (resp && resp.success) {
-				alert('Page text was output to the tab console.');
-			} else {
-				alert('Could not log page text.');
-			}
-		});
-	};
+      if (response && response.success) {
+        setCurrentJSON(response.data);
+        showStatus('✅ Page data extracted successfully!', 'success');
+      } else {
+        showStatus(`Failed: ${response?.error || 'Unknown error'}`, 'error');
+      }
+    } catch (error: any) {
+      console.error('Error:', error);
+      
+      if (error?.message?.includes('Receiving end does not exist')) {
+        showStatus('❌ Content script not ready. Try refreshing the page.', 'error');
+      } else if (error?.message?.includes('Extension context invalidated')) {
+        showStatus('❌ Extension was updated. Please refresh the page.', 'error');
+      } else {
+        showStatus(`Error: ${error?.message || 'Failed to extract data'}`, 'error');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-	const simplifyPage = () => {
-		chrome.runtime.sendMessage({ type: 'SIMPLIFY_PAGE', timestamp: new Date().toISOString() }, (resp) => {
-			if (!resp || !resp.success) {
-				alert('Could not simplify this page.');
-			}
-		});
-	};
+  const copyToClipboard = async () => {
+    if (!currentJSON) return;
 
-	const clearAllData = () => {
-		if (confirm('Are you sure you want to clear all scraped data?')) {
-			chrome.runtime.sendMessage(
-				{
-					type: 'CLEAR_STORAGE',
-					timestamp: new Date().toISOString(),
-				},
-				() => {
-					setStoredDates({});
-					setActiveTab(null);
-				}
-			);
-		}
-	};
+    try {
+      const jsonString = JSON.stringify(currentJSON, null, 2);
+      await navigator.clipboard.writeText(jsonString);
+      showStatus('✅ JSON copied to clipboard!', 'success');
+    } catch (error) {
+      showStatus('Failed to copy to clipboard', 'error');
+    }
+  };
 
-	const formatDate = (dateStr: string): string => {
-		const date = new Date(dateStr);
-		return date.toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-		});
-	};
+  const downloadJSON = async () => {
+    if (!currentJSON) return;
 
-	if (loading) {
-		return (
-			<div class="popup-container">
-				<header class="popup-header">
-					<h1>MyJobSearch</h1>
-					<p>Academic Date Scraper</p>
-				</header>
-				<div class="loading">Loading...</div>
-			</div>
-		);
-	}
+    showStatus('Downloading...', 'info');
 
-	const dateCollections = Object.values(storedDates);
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'DOWNLOAD_JSON',
+        data: currentJSON
+      });
 
-	if (dateCollections.length === 0) {
-		return (
-			<div class="popup-container">
-				<header class="popup-header">
-					<h1>MyJobSearch</h1>
-					<p>Academic Date Scraper</p>
-				</header>
-				<div class="empty-state">
-					<p>No dates scraped yet.</p>
-					<p class="hint">Visit a university's important dates page to start scraping!</p>
-				</div>
-			</div>
-		);
-	}
+      if (response && response.success) {
+        showStatus('✅ Download started!', 'success');
+      } else {
+        showStatus(`Download failed: ${response?.error || 'Unknown error'}`, 'error');
+      }
+    } catch (error) {
+      showStatus(`Error: ${(error as any)?.message || 'Unknown error'}`, 'error');
+    }
+  };
 
-	const activeCollection = activeTab ? storedDates[activeTab] : null;
+  const jsonPreview = currentJSON
+    ? JSON.stringify(currentJSON, null, 2).slice(0, 500) + '...'
+    : 'Click "Extract" to see preview...';
 
-	return (
-		<div class="popup-container">
-			<header class="popup-header">
-				<h1>MyJobSearch</h1>
-				<p>Academic Date Scraper</p>
-			</header>
+  return (
+    <div class="container">
+      <h1>🌐 Webpage to JSON</h1>
 
-			<div class="tabs">
-				{Object.keys(storedDates).map((key) => {
-					const collection = storedDates[key];
-					return (
-						<button
-							key={key}
-							class={`tab ${activeTab === key ? 'active' : ''}`}
-							onClick={() => setActiveTab(key)}
-						>
-							{collection.university || key}
-						</button>
-					);
-				})}
-			</div>
+      {status && (
+        <div class={`status status-${statusType}`}>
+          {status}
+        </div>
+      )}
 
-			{activeCollection && (
-				<div class="content">
-					<div class="collection-info">
-						<h2>{activeCollection.university || 'Unknown University'}</h2>
-						<p class="metadata">
-							{activeCollection.dates.length} dates scraped
-							<br />
-							<span class="timestamp">
-								Last updated: {formatDate(activeCollection.scrapedAt)}
-							</span>
-						</p>
-					</div>
+      <div class="controls">
+        <button 
+          onClick={extractPageData} 
+          disabled={loading}
+          class="btn primary"
+        >
+          📄 Extract Current Page
+        </button>
+        <button 
+          onClick={copyToClipboard}
+          disabled={!currentJSON}
+          class="btn secondary"
+        >
+          📋 Copy JSON
+        </button>
+        <button 
+          onClick={downloadJSON}
+          disabled={!currentJSON}
+          class="btn secondary"
+        >
+          💾 Download JSON
+        </button>
+      </div>
 
-					<div class="dates-list">
-						{activeCollection.dates.map((date, index) => (
-							<div key={index} class={`date-item ${date.category}`}>
-								<div class="date-header">
-									<span class="event-name">{date.event}</span>
-									{date.deadline && <span class="deadline-badge">Deadline</span>}
-								</div>
-								<div class="date-details">
-									<span class="date-value">{formatDate(date.date)}</span>
-									{date.term && <span class="term">{date.term}</span>}
-									<span class={`category-badge ${date.category}`}>{date.category}</span>
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
-			)}
+      <div class="preview">
+        <h3>JSON Preview (first 500 chars):</h3>
+        <pre>{jsonPreview}</pre>
+      </div>
 
-			<footer class="popup-footer">
-				<button onClick={logPageText} class="btn btn-secondary">
-					Log Page Text
-				</button>
-				<button onClick={simplifyPage} class="btn btn-secondary">
-					Simplify Current Page
-				</button>
-				<button onClick={downloadPageSnapshot} class="btn btn-secondary">
-					Download Page Snapshot
-				</button>
-				<button onClick={printPage} class="btn btn-secondary">
-					Print Page (PDF)
-				</button>
-				<button onClick={exportToJSON} class="btn btn-primary">
-					Export JSON
-				</button>
-				<button onClick={clearAllData} class="btn btn-secondary">
-					Clear All
-				</button>
-			</footer>
-		</div>
-	);
+      <div class="info">
+        <details>
+          <summary>ℹ️ What's extracted?</summary>
+          <ul>
+            <li>Page metadata (title, URL, description)</li>
+            <li>Headings (H1, H2, H3)</li>
+            <li>Paragraphs (first 50)</li>
+            <li>Links (first 100)</li>
+            <li>Images (first 50)</li>
+            <li>Meta tags and scripts</li>
+            <li>Text content (first 10k chars)</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+  );
 }
