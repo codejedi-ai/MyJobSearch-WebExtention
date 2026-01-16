@@ -1,8 +1,11 @@
 // Base class for AI chat service integrations
 
-import { ChatServiceInterface, ChatPlatform, ChatMessage } from './types';
+import { ChatServiceInterface, ChatPlatform, ChatMessage, ButtonDefinition } from './types';
 
 const INJECTED_MARKER = 'data-ext-send-injected';
+
+// Re-export ButtonDefinition for convenience
+export type { ButtonDefinition } from './types';
 
 export abstract class BaseChatService implements ChatServiceInterface {
   abstract name: ChatPlatform;
@@ -10,13 +13,31 @@ export abstract class BaseChatService implements ChatServiceInterface {
 
   private observer: MutationObserver | null = null;
   private checkIntervals: Map<HTMLElement, number> = new Map();
+  private setupRetryCount = 0;
+  private static MAX_SETUP_RETRIES = 5;
 
   abstract getMessageContainers(): HTMLElement[];
   abstract extractMarkdown(container: HTMLElement): string;
   abstract getActionButtonContainer(messageContainer: HTMLElement): HTMLElement | null;
   abstract isMessageStreaming(container: HTMLElement): boolean;
   abstract getChatContainer(): HTMLElement | null;
-  abstract createStyledButton(): HTMLElement;
+
+  /**
+   * Create styled buttons for injection into the action bar
+   * Override this to add multiple buttons using the builder pattern
+   */
+  abstract createButtons(messageContainer: HTMLElement): ButtonDefinition[];
+
+  /**
+   * @deprecated Use createButtons() instead
+   * Legacy method for backwards compatibility
+   */
+  createStyledButton(): HTMLElement {
+    // Default implementation - subclasses should override createButtons instead
+    const button = document.createElement('button');
+    button.textContent = 'Send';
+    return button;
+  }
 
   initialize(): void {
     console.log(`[Extension] Initializing ${this.name} chat service`);
@@ -45,12 +66,20 @@ export abstract class BaseChatService implements ChatServiceInterface {
   protected setupMutationObserver(): void {
     const chatContainer = this.getChatContainer();
     if (!chatContainer) {
-      console.warn('[Extension] Chat container not found, retrying in 2s...');
+      this.setupRetryCount++;
+      if (this.setupRetryCount >= BaseChatService.MAX_SETUP_RETRIES) {
+        console.warn(`[Extension] Chat container not found after ${BaseChatService.MAX_SETUP_RETRIES} retries. Giving up.`);
+        console.log('[Extension] Will rely on periodic scanning instead.');
+        // Set up periodic scanning as fallback
+        this.startPeriodicScanning();
+        return;
+      }
+      console.warn(`[Extension] Chat container not found, retry ${this.setupRetryCount}/${BaseChatService.MAX_SETUP_RETRIES} in 2s...`);
       setTimeout(() => this.setupMutationObserver(), 2000);
       return;
     }
 
-    console.log('[Extension] Setting up MutationObserver on chat container');
+    console.log('[Extension] Setting up MutationObserver on chat container:', chatContainer.tagName);
 
     this.observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
@@ -68,6 +97,16 @@ export abstract class BaseChatService implements ChatServiceInterface {
       childList: true,
       subtree: true,
     });
+  }
+
+  /**
+   * Fallback: periodically scan for new messages when MutationObserver can't be set up
+   */
+  private startPeriodicScanning(): void {
+    console.log('[Extension] Starting periodic message scanning (every 3s)');
+    setInterval(() => {
+      this.injectIntoExistingMessages();
+    }, 3000);
   }
 
   protected handleAddedNode(node: HTMLElement): void {
@@ -140,16 +179,30 @@ export abstract class BaseChatService implements ChatServiceInterface {
       return;
     }
 
-    const button = this.createStyledButton();
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.handleButtonClick(messageContainer);
+    // Get all buttons to inject using the builder pattern
+    const buttons = this.createButtons(messageContainer);
+
+    if (buttons.length === 0) {
+      console.log('[Extension] No buttons to inject');
+      return;
+    }
+
+    // Inject each button
+    buttons.forEach((buttonDef) => {
+      const { element, onClick } = buttonDef;
+
+      element.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const content = this.extractMarkdown(messageContainer);
+        onClick(messageContainer, content);
+      });
+
+      buttonContainer.appendChild(element);
     });
 
-    buttonContainer.appendChild(button);
     messageContainer.setAttribute(INJECTED_MARKER, 'true');
-    console.log('[Extension] Injected send button into message');
+    console.log(`[Extension] Injected ${buttons.length} button(s) into message`);
   }
 
   protected handleButtonClick(messageContainer: HTMLElement): void {

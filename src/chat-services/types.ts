@@ -11,6 +11,12 @@ export interface ChatMessage {
   conversationId?: string;
 }
 
+export interface ButtonDefinition {
+  element: HTMLButtonElement;
+  id: string;
+  onClick: (messageContainer: HTMLElement, content: string) => void;
+}
+
 export interface ChatServiceInterface {
   /** Service name identifier */
   name: ChatPlatform;
@@ -39,6 +45,12 @@ export interface ChatServiceInterface {
   /** Get the main chat container element for MutationObserver */
   getChatContainer(): HTMLElement | null;
 
-  /** Create a styled button matching the native UI */
+  /** Create styled buttons for injection using the builder pattern */
+  createButtons(messageContainer: HTMLElement): ButtonDefinition[];
+
+  /**
+   * @deprecated Use createButtons() instead
+   * Create a styled button matching the native UI
+   */
   createStyledButton(): HTMLElement;
 }

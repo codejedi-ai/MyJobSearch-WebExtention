@@ -3,25 +3,31 @@
 
 export const DEEPSEEK_SELECTORS = {
   // Chat container - the main scrollable area containing messages
-  // Try multiple selectors in order of specificity
+  // DeepSeek uses specific class patterns - use body as ultimate fallback
   chatContainer: [
-    '[class*="chat-container"]',
+    '#root',
+    '#__next',
+    '[class*="chat"]',
     '[class*="conversation"]',
     '[class*="messages"]',
     'main',
-    '#__next main',
     '[role="main"]',
+    // DO NOT use body - observing body kills performance
   ],
 
   // Assistant message containers - messages from the AI
-  // DeepSeek likely uses data attributes or class names to identify roles
+  // DeepSeek wraps messages in divs with markdown content
   assistantMessage: [
+    '[class*="ds-markdown"]',
+    '[class*="markdown-body"]',
+    '.markdown-body',
     '[data-role="assistant"]',
     '[class*="assistant"]',
     '[class*="bot-message"]',
-    '[class*="ai-message"]',
-    '[class*="response"]',
-    '.message:not([data-role="user"])',
+    '[class*="message-content"]',
+    // Generic markdown containers that might contain AI responses
+    '.prose',
+    '[class*="prose"]',
   ],
 
   // User message containers (for filtering)
@@ -29,26 +35,34 @@ export const DEEPSEEK_SELECTORS = {
     '[data-role="user"]',
     '[class*="user-message"]',
     '[class*="human-message"]',
+    '[class*="user"]',
   ],
 
   // Action buttons container - where copy, like, etc. buttons live
+  // DeepSeek puts action buttons in a row/flex container
   actionButtons: [
+    '[class*="ds-flex"]',
     '[class*="action"]',
     '[class*="toolbar"]',
+    '[class*="btn-group"]',
     '[class*="buttons"]',
     '[class*="controls"]',
-    '[class*="message-footer"]',
     '[class*="operations"]',
+    '[class*="message-footer"]',
+    '[class*="flex"][class*="gap"]',
   ],
 
   // Copy button specifically - to clone styling from
   copyButton: [
+    'button[class*="ds-"]',
+    '[class*="ds-icon-button"]',
     'button[class*="copy"]',
     'button[aria-label*="copy" i]',
     'button[title*="Copy" i]',
     'button[data-action="copy"]',
     '[class*="copy-button"]',
-    'button svg[class*="copy"]',
+    // Generic small buttons that might be action buttons
+    'button[class*="icon"]',
   ],
 
   // Streaming/loading indicators
@@ -59,12 +73,18 @@ export const DEEPSEEK_SELECTORS = {
     '[class*="generating"]',
     '[class*="thinking"]',
     '[class*="cursor"]',
+    '[class*="blink"]',
     '.animate-pulse',
     '[class*="dot-flashing"]',
+    // Cursor that appears at end of streaming text
+    '[class*="cursor-blink"]',
   ],
 
   // Message content area - where the actual text/markdown is rendered
   messageContent: [
+    '[class*="ds-markdown"]',
+    '[class*="markdown-body"]',
+    '.markdown-body',
     '[class*="content"]',
     '[class*="markdown"]',
     '[class*="prose"]',
