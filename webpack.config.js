@@ -8,6 +8,7 @@ module.exports = (env, argv) => {
 		entry: {
 			background: './src/background.ts',
 			content: './src/content.ts',
+			'chat-content': './src/chat-services/entry.ts',
 			popup: './src/popup/index.tsx',
 		},
 		output: {

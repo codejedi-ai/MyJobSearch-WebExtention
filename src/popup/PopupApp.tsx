@@ -92,20 +92,28 @@ export function PopupApp() {
     : 'Click "Extract" to see preview...';
 
   return (
-    <div class="container">
-      <h1>🌐 Webpage to JSON</h1>
+    <div class="container" data-component="popup-main-container" data-testid="popup-container">
+      <h1 data-component="popup-title" data-testid="popup-title">🌐 Webpage to JSON</h1>
 
       {status && (
-        <div class={`status status-${statusType}`}>
+        <div 
+          class={`status status-${statusType}`}
+          data-component="status-message"
+          data-status-type={statusType}
+          data-testid={`status-${statusType}`}
+        >
           {status}
         </div>
       )}
 
-      <div class="controls">
+      <div class="controls" data-component="controls-section" data-testid="controls">
         <button 
           onClick={extractPageData} 
           disabled={loading}
           class="btn primary"
+          data-action="extract-page-data"
+          data-testid="btn-extract"
+          data-loading={loading}
         >
           📄 Extract Current Page
         </button>
@@ -113,6 +121,9 @@ export function PopupApp() {
           onClick={copyToClipboard}
           disabled={!currentJSON}
           class="btn secondary"
+          data-action="copy-to-clipboard"
+          data-testid="btn-copy"
+          data-enabled={!!currentJSON}
         >
           📋 Copy JSON
         </button>
@@ -120,27 +131,36 @@ export function PopupApp() {
           onClick={downloadJSON}
           disabled={!currentJSON}
           class="btn secondary"
+          data-action="download-json"
+          data-testid="btn-download"
+          data-enabled={!!currentJSON}
         >
           💾 Download JSON
         </button>
       </div>
 
-      <div class="preview">
-        <h3>JSON Preview (first 500 chars):</h3>
-        <pre>{jsonPreview}</pre>
+      <div class="preview" data-component="preview-section" data-testid="preview">
+        <h3 data-component="preview-title" data-testid="preview-title">JSON Preview (first 500 chars):</h3>
+        <pre 
+          data-component="json-preview"
+          data-testid="json-preview"
+          data-json-available={!!currentJSON}
+        >
+          {jsonPreview}
+        </pre>
       </div>
 
-      <div class="info">
-        <details>
-          <summary>ℹ️ What's extracted?</summary>
-          <ul>
-            <li>Page metadata (title, URL, description)</li>
-            <li>Headings (H1, H2, H3)</li>
-            <li>Paragraphs (first 50)</li>
-            <li>Links (first 100)</li>
-            <li>Images (first 50)</li>
-            <li>Meta tags and scripts</li>
-            <li>Text content (first 10k chars)</li>
+      <div class="info" data-component="info-section" data-testid="info">
+        <details data-component="collapsible-info" data-testid="collapsible-info">
+          <summary data-component="info-summary" data-testid="info-toggle">ℹ️ What's extracted?</summary>
+          <ul data-component="extraction-list" data-testid="extraction-list">
+            <li data-extraction-item="metadata">Page metadata (title, URL, description)</li>
+            <li data-extraction-item="headings">Headings (H1, H2, H3)</li>
+            <li data-extraction-item="paragraphs">Paragraphs (first 50)</li>
+            <li data-extraction-item="links">Links (first 100)</li>
+            <li data-extraction-item="images">Images (first 50)</li>
+            <li data-extraction-item="meta-tags">Meta tags and scripts</li>
+            <li data-extraction-item="text-content">Text content (first 10k chars)</li>
           </ul>
         </details>
       </div>

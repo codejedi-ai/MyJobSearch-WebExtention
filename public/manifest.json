@@ -22,6 +22,18 @@
 			"matches": ["<all_urls>"],
 			"js": ["content.js"],
 			"run_at": "document_idle"
+		},
+		{
+			"matches": [
+				"https://chat.deepseek.com/*",
+				"https://chat.openai.com/*",
+				"https://chatgpt.com/*",
+				"https://claude.ai/*",
+				"https://gemini.google.com/*",
+				"https://chat.qwenlm.ai/*"
+			],
+			"js": ["chat-content.js"],
+			"run_at": "document_idle"
 		}
 	],
 	"action": {

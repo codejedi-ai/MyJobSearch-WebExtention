@@ -273,4 +273,30 @@ export type JobExtensionMessage =
 	| AutoApplyMessage
 	| UpdateJobStatusMessage;
 
-export type AllExtensionMessages = ExtensionMessage | JobExtensionMessage;
+export type AllExtensionMessages = ExtensionMessage | JobExtensionMessage | ChatExtensionMessage;
+
+// Chat Service Types
+export type ChatPlatform = 'deepseek' | 'chatgpt' | 'claude' | 'gemini' | 'qwen';
+
+export interface ChatMessage {
+	platform: ChatPlatform;
+	role: 'user' | 'assistant';
+	content: string; // Markdown format
+	timestamp: string;
+	sourceUrl: string;
+	conversationId?: string;
+}
+
+// Chat-related Messages
+export interface SendChatMessageAction extends BaseMessage {
+	type: 'SEND_CHAT_MESSAGE';
+	message: ChatMessage;
+}
+
+export interface ChatMessageSentResponse extends BaseMessage {
+	type: 'CHAT_MESSAGE_SENT';
+	success: boolean;
+	error?: string;
+}
+
+export type ChatExtensionMessage = SendChatMessageAction | ChatMessageSentResponse;
