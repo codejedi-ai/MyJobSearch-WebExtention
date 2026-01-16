@@ -5,7 +5,7 @@ export function PopupApp() {
   return (
     <div class="container">
       <h1>Hello World</h1>
-      <p>MyJobSearch Extension</p>
+      <p>hello-world Extension</p>
     </div>
   );
 }

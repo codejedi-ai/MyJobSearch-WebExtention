@@ -1,4 +1,6 @@
-# MyJobSearch Extension - Hello World
+# hello-world Extension - Hello World
+
+![Banner](banner.png)
 
 A simple Chrome extension that displays "Hello World".
 

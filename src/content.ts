@@ -1,1 +1,1 @@
-console.log('MyJobSearch Extension: Hello World');
+console.log('hello-world Extension: Hello World');

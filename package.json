@@ -1,6 +1,6 @@
 {
 	"private": true,
-	"name": "myjobsearch-extension",
+	"name": "hello-world-extension",
 	"version": "1.0.0",
 	"description": "Chrome extension to scrape academic and job dates from university pages",
 	"scripts": {

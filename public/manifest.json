@@ -1,6 +1,6 @@
 {
 	"manifest_version": 3,
-	"name": "MyJobSearch - Academic Date Scraper",
+	"name": "hello-world - Academic Date Scraper",
 	"version": "1.0.0",
 	"description": "Automatically scrape academic and job dates from university pages and convert to JSON",
 	"permissions": [

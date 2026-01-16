@@ -1,1 +1,1 @@
-console.log('MyJobSearch Extension: Background Service Worker');
+console.log('hello-world Extension: Background Service Worker');

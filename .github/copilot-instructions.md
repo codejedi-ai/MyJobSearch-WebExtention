@@ -1,4 +1,4 @@
-# Copilot Instructions for MyJobSearch Web Extension
+# Copilot Instructions for hello-world Web Extension
 
 ## Project Overview
 
