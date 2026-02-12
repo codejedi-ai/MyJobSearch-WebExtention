@@ -2,7 +2,7 @@
 	"private": true,
 	"name": "hello-world-extension",
 	"version": "1.0.0",
-	"description": "Chrome extension to scrape academic and job dates from university pages",
+	"description": "A basic Hello World Chrome extension",
 	"scripts": {
 		"dev": "webpack --mode development --watch",
 		"build": "webpack --mode production",

@@ -1,36 +1,40 @@
-# hello-world Extension - Hello World
+# Hello World Chrome Extension
 
-![Banner](banner.png)
+A basic starter template for a Chrome extension using TypeScript, Preact, and Webpack.
 
-A simple Chrome extension that displays "Hello World".
+## Features
 
-## Installation
+- **Popup UI**: Built with Preact.
+- **Content Script**: Logs "Hello World" to the page console.
+- **Background Script**: Minimal background service worker.
+- **TypeScript**: Type-safe development.
+- **Webpack**: Bundled for Chrome.
 
-1. Clone the repository
-2. Run `npm install`
-3. Create three PNG files in `public/icons/`:
-   - `icon16.png` (16x16 pixels)
-   - `icon48.png` (48x48 pixels)
-   - `icon128.png` (128x128 pixels)
-4. Run `npm run build`
-5. Open Chrome and go to `chrome://extensions/`
-6. Enable "Developer mode"
-7. Click "Load unpacked" and select the `dist/` folder
+## Quick Start
 
-## Development
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```bash
-# Build for production
-npm run build
+2. Build the extension:
+   ```bash
+   # Development mode (with watch)
+   npm run dev
 
-# Build in development mode with watch
-npm run dev
-```
+   # Production mode
+   npm run build
+   ```
 
-## What It Does
+3. Load in Chrome:
+   - Open `chrome://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked"
+   - Select the `dist/` folder in this project
 
-This extension is a basic hello world implementation that:
-- Displays "Hello World" in the popup UI
-- Logs "Hello World" messages to the browser console
+## Structure
 
-That's it! All other functionality has been removed.
+- `src/popup/`: The popup UI entry point and components.
+- `src/content.ts`: Script that runs in the context of web pages.
+- `src/background.ts`: The extension's service worker.
+- `public/manifest.json`: Extension configuration.

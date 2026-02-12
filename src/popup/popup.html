@@ -1,21 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>hello-world - Academic Date Scraper</title>
 	<style>
 		body {
-			width: 400px;
-			min-height: 300px;
+			width: 380px;
+			font-family: -apple-system, system-ui, sans-serif;
 			margin: 0;
 			padding: 0;
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+			background: #202123;
+			color: #ececf1;
+		}
+
+		.header {
+			padding: 16px;
+			background: #2d2d30;
+			border-bottom: 1px solid #4d4d4f;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+
+		.header img {
+			width: 32px;
+			height: 32px;
+			border-radius: 6px;
+		}
+
+		.header h1 {
+			margin: 0;
+			font-size: 16px;
+			font-weight: 600;
+			color: #10a37f;
+		}
+
+		.uuid-tag {
+			font-size: 9px;
+			color: #6e6e80;
+			margin-top: 4px;
+			font-family: monospace;
+		}
+
+		.editor-section {
+			padding: 16px;
+		}
+
+		.label {
+			font-size: 11px;
+			color: #8e8ea0;
+			font-weight: 600;
+			margin-bottom: 8px;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			display: flex;
+			justify-content: space-between;
+		}
+
+		textarea {
+			width: 100%;
+			height: 120px;
+			background: #343541;
+			color: white;
+			border: 1px solid #565869;
+			border-radius: 6px;
+			padding: 10px;
+			font-size: 13px;
+			resize: vertical;
+			box-sizing: border-box;
+			font-family: inherit;
+			line-height: 1.4;
+			transition: border 0.2s;
+		}
+
+		textarea:focus {
+			border-color: #10a37f;
+			outline: none;
+		}
+
+		.status-area {
+			padding: 0 16px 16px 16px;
+			font-size: 12px;
+			color: #acacbe;
+		}
+
+		.status-row {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 6px;
+		}
+
+		.footer {
+			padding: 12px;
+			font-size: 10px;
+			color: #6e6e80;
+			text-align: center;
+			border-top: 1px solid #4d4d4f;
+			background: #2d2d30;
+		}
+
+		#save-status {
+			color: #10a37f;
+			opacity: 0;
+			transition: opacity 0.5s;
 		}
 	</style>
 </head>
+
 <body>
-	<div id="app"></div>
+	<div class="header">
+		<img src="logo.png" alt="Logo">
+		<div>
+			<h1>Agent Drive</h1>
+			<div class="uuid-tag" id="chat-uuid">Detecting Chat...</div>
+		</div>
+	</div>
+
+	<div class="editor-section">
+		<div class="label">
+			<span>System Instruction</span>
+			<span id="save-status">Saved</span>
+		</div>
+		<textarea id="system-prompt"
+			placeholder="e.g. You are a Senior Python Developer. Always reply with code blocks..."></textarea>
+	</div>
+
+	<div class="status-area">
+		<div class="status-row">
+			<span>Status:</span>
+			<span style="color: #10a37f;">Active</span>
+		</div>
+		<div class="status-row">
+			<span>Mode:</span>
+			<span>Auto-Inject</span>
+		</div>
+	</div>
+
+	<div class="footer">
+		Changes apply immediately to your next message.
+	</div>
+
 	<script src="popup.js"></script>
 </body>
+
 </html>
